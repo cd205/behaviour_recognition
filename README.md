@@ -1,2 +1,2 @@
 # behaviour_recognition
-computer driven techniques to analyse behaviours 
+computer vision driven techniques to analyse behaviours 
