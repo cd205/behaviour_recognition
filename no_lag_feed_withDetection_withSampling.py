@@ -80,19 +80,23 @@ class Camera():
 
 def live_camera_feed(shoulder_pos, positions, lock):
     """
-    function to run and rocess live camera images
+    function to run and process live camera images
     """
     
     mp_drawing = mediapipe.solutions.drawing_utils
     mp_holistic = mediapipe.solutions.holistic
-    cam = Camera('rtsp://admin:CXNVMA@192.168.0.109/h264_stream')
-    #cam = Camera('webcam')
+    #cam = Camera('rtsp://admin:CXNVMA@192.168.0.109/h264_stream')
+    cam = Camera('webcam')
 
     print(f"Camera is alive?: {cam.p.is_alive()}")
     
     with mp_holistic.Holistic( 
-    min_detection_confidence=0.35, 
-    min_tracking_confidence=0.35
+    static_image_mode=False, 
+    model_complexity=1, 
+    smooth_landmarks=True, 
+    min_detection_confidence=0.45, 
+    min_tracking_confidence=0.45,
+
     ) as holistic:
         while(1):
             frame = cam.get_frame(0.65)
@@ -127,6 +131,18 @@ def live_camera_feed(shoulder_pos, positions, lock):
                                     mp_drawing.DrawingSpec(color=(0,255,0), thickness=1, circle_radius=1),
                                     mp_drawing.DrawingSpec(color=(0,0,255), thickness=1, circle_radius=1))
 
+            # 3. Draw Right Hand landmarks
+            mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS, 
+                                mp_drawing.DrawingSpec(color=(0,0,255), thickness=1, circle_radius=1),
+                                mp_drawing.DrawingSpec(color=(0,0,255), thickness=1, circle_radius=1))
+
+             # 4. Draw Left Hand landmarks
+            mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS, 
+                                mp_drawing.DrawingSpec(color=(255,0,255), thickness=1, circle_radius=1),
+                                mp_drawing.DrawingSpec(color=(255,0,255), thickness=1, circle_radius=1))
+
+            
+            
             cv2.imshow("Feed",image)
             
             key = cv2.waitKey(1)
@@ -145,7 +161,7 @@ def feed_sampling(shoulder_pos, positions):
     function to print values
     """
     n = 0
-    while n<10:
+    while n<5:
     
         #val = np.random.randint(10,size=np.random.randint(10))
         timestamp = datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S.%f')
@@ -182,3 +198,7 @@ if __name__ == '__main__':
         p2.start()
         p1.join()
         p2.join()
+
+
+        # https://www.youtube.com/watch?v=-toNMaS4SeQ
+        # https://github.com/niconielsen32/ComputerVision/blob/master/headPoseEstimation.py
